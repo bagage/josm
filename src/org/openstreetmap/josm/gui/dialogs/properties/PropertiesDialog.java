@@ -93,6 +93,7 @@ import org.openstreetmap.josm.gui.layer.MainLayerManager.ActiveLayerChangeListen
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPreset;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetHandler;
 import org.openstreetmap.josm.gui.tagging.presets.TaggingPresetType;
+import org.openstreetmap.josm.gui.TableColumnAdjuster;
 import org.openstreetmap.josm.gui.util.HighlightHelper;
 import org.openstreetmap.josm.gui.widgets.CompileSearchTextDecorator;
 import org.openstreetmap.josm.gui.widgets.DisableShortcutsOnFocusGainedTextField;
@@ -174,6 +175,11 @@ implements SelectionChangedListener, ActiveLayerChangeListener, DataSetListenerA
      * This sub-object is responsible for all adding and editing of tags
      */
     private final transient TagEditHelper editHelper = new TagEditHelper(tagTable, tagData, valueCount);
+
+    /**
+     * This sub-object is responsible for resizing columns so that all available space goes to last column
+    **/
+    private final TableColumnAdjuster tableColumnAdjuster = new TableColumnAdjuster(tagTable);
 
     private final transient DataSetListenerAdapter dataChangedAdapter = new DataSetListenerAdapter(this);
     private final HelpAction helpAction = new HelpAction();
@@ -303,6 +309,10 @@ implements SelectionChangedListener, ActiveLayerChangeListener, DataSetListenerA
 
         tagTable.getColumnModel().getColumn(0).setCellRenderer(cellRenderer);
         tagTable.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
+
+        // tableColumnAdjuster is responsible of resizing columns
+        tagTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         tagTable.setRowSorter(tagRowSorter);
 
         final RemoveHiddenSelection removeHiddenSelection = new RemoveHiddenSelection();
@@ -604,6 +614,8 @@ implements SelectionChangedListener, ActiveLayerChangeListener, DataSetListenerA
             tags.put(e.getKey(), e.getValue().size() == 1
                     ? e.getValue().keySet().iterator().next() : tr("<different>"));
         }
+        // readjust columns size on data change
+        tableColumnAdjuster.adjustColumns();
 
         membershipData.setRowCount(0);
 
