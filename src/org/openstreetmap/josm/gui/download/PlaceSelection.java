@@ -9,6 +9,8 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -116,7 +118,6 @@ public class PlaceSelection implements DownloadSelection {
         Collections.reverse(cmtHistory);
         cbSearchExpression.setPossibleItems(cmtHistory);
         lpanel.add(cbSearchExpression);
-
         panel.add(lpanel, GBC.std().fill(GBC.HORIZONTAL).insets(5, 5, 0, 5));
         SearchAction searchAction = new SearchAction();
         JButton btnSearch = new JButton(searchAction);
@@ -165,6 +166,20 @@ public class PlaceSelection implements DownloadSelection {
             }
         });
         parent = gui;
+
+        parent.btnDownload.addFocusListener(new FocusListener() {
+                private boolean isSet = false;
+                @Override
+                public void focusLost(FocusEvent e) {
+                }
+                @Override
+                public void focusGained(FocusEvent e) {
+                    if (!isSet){
+                        cbSearchExpression.requestFocusInWindow();
+                        isSet = true;
+                    }
+                }
+            });
     }
 
     @Override
