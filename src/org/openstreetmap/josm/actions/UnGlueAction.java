@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -87,9 +88,17 @@ public class UnGlueAction extends JosmAction {
     }
 
     protected void unglue(ActionEvent e) throws UserCancelException {
-
         Collection<OsmPrimitive> selection = getLayerManager().getEditDataSet().getSelected();
+        if (!unglue2(e, selection)) {
+            for (OsmPrimitive p : selection) {
+                if (p instanceof Node) {
+                    unglue2(e, Collections.singleton(p));
+                }
+            }
+        }
+    }
 
+    protected boolean unglue2(ActionEvent e, Collection<OsmPrimitive> selection) throws UserCancelException {
         String errMsg = null;
         int errorTime = Notification.TIME_DEFAULT;
         if (checkSelectionOneNodeAtMostOneWay(selection)) {
@@ -169,7 +178,9 @@ public class UnGlueAction extends JosmAction {
                     .setIcon(JOptionPane.ERROR_MESSAGE)
                     .setDuration(errorTime)
                     .show();
+            return false;
         }
+        return true;
     }
 
     private void cleanup() {
@@ -306,7 +317,7 @@ public class UnGlueAction extends JosmAction {
         }
 
         // If this wasn't called from menu, place it where the cursor is/was
-        if (e.getSource() instanceof JPanel) {
+        if (e != null && e.getSource() instanceof JPanel) {
             MapView mv = Main.map.mapView;
             n.setCoor(mv.getLatLon(mv.lastMEvent.getX(), mv.lastMEvent.getY()));
         }
