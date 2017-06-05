@@ -76,7 +76,15 @@ public class MultiValueResolutionDecision {
         } else if (tags.size() == 1) {
             this.type = MultiValueDecisionType.KEEP_ONE;
             this.value = tags.getValues().iterator().next();
+        } else {
+            for (String v : tags.getValues()) {
+                if (!v.equals("yes") && !v.equals("")) {
+                    this.value = v;
+                    break;
+                }
+            }
         }
+
     }
 
     /**
@@ -142,7 +150,7 @@ public class MultiValueResolutionDecision {
      */
     public String getChosenValue() {
         switch(type) {
-        case UNDECIDED: throw new IllegalStateException(tr("Not decided yet."));
+        case UNDECIDED: //throw new IllegalStateException(tr("Not decided yet."));
         case KEEP_ONE: return value;
         case SUM_ALL_NUMERIC: return tags.getSummedValues(getKey());
         case KEEP_ALL: return tags.getJoinedValues(getKey());

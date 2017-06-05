@@ -2,6 +2,7 @@
 package org.openstreetmap.josm.gui.conflict.tags;
 
 import static org.openstreetmap.josm.gui.conflict.tags.RelationMemberConflictDecisionType.UNDECIDED;
+import static org.openstreetmap.josm.gui.conflict.tags.RelationMemberConflictDecisionType.KEEP;
 import static org.openstreetmap.josm.tools.I18n.tr;
 
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class RelationMemberConflictDecision {
         this.pos = pos;
         this.originalPrimitive = member.getMember();
         this.role = member.hasRole() ? member.getRole() : "";
-        this.decision = UNDECIDED;
+        this.decision = KEEP;
     }
 
     public Relation getRelation() {

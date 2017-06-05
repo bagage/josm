@@ -17,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -39,7 +38,6 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Way;
 import org.openstreetmap.josm.gui.DefaultNameFormatter;
 import org.openstreetmap.josm.gui.ExtendedDialog;
-import org.openstreetmap.josm.gui.MapView;
 import org.openstreetmap.josm.gui.Notification;
 import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.ImageProvider;
@@ -89,18 +87,20 @@ public class UnGlueAction extends JosmAction {
 
     protected void unglue(ActionEvent e) throws UserCancelException {
         Collection<OsmPrimitive> selection = getLayerManager().getEditDataSet().getSelected();
-        if (!unglue2(e, selection)) {
+        if (!unglue2(e, selection, true)) {
             for (OsmPrimitive p : selection) {
                 if (p instanceof Node) {
-                    unglue2(e, Collections.singleton(p));
+                    unglue2(e, Collections.singleton(p), true);
                 }
             }
         }
     }
 
-    protected boolean unglue2(ActionEvent e, Collection<OsmPrimitive> selection) throws UserCancelException {
+    public boolean unglue2(ActionEvent e, Collection<OsmPrimitive> selection, boolean showDialog) throws UserCancelException {
         String errMsg = null;
         int errorTime = Notification.TIME_DEFAULT;
+
+        PropertiesMembershipDialog.showDialog = showDialog;
         if (checkSelectionOneNodeAtMostOneWay(selection)) {
             checkAndConfirmOutlyingUnglue();
             int count = 0;
@@ -178,8 +178,10 @@ public class UnGlueAction extends JosmAction {
                     .setIcon(JOptionPane.ERROR_MESSAGE)
                     .setDuration(errorTime)
                     .show();
+            PropertiesMembershipDialog.showDialog = true;
             return false;
         }
+        PropertiesMembershipDialog.showDialog = true;
         return true;
     }
 
@@ -214,6 +216,8 @@ public class UnGlueAction extends JosmAction {
 
         final transient ExistingBothNewChoice tags;
         final transient ExistingBothNewChoice memberships;
+
+        static boolean showDialog;
 
         private PropertiesMembershipDialog(boolean preselectNew, boolean queryTags, boolean queryMemberships) {
             super(Main.parent, tr("Tags / Memberships"), tr("Unglue"), tr("Cancel"));
@@ -250,10 +254,13 @@ public class UnGlueAction extends JosmAction {
             final boolean usedInRelations = isUsedInRelations(selectedNodes);
             if (tagged || usedInRelations) {
                 final PropertiesMembershipDialog dialog = new PropertiesMembershipDialog(preselectNew, tagged, usedInRelations);
-                dialog.showDialog();
-                if (dialog.getValue() != 1) {
-                    throw new UserCancelException();
+                if (showDialog) {
+                    dialog.showDialog();
+                     if (dialog.getValue() != 1) {
+                        throw new UserCancelException();
+                    }
                 }
+                System.out.println(showDialog +  " " + dialog.getValue());
                 return dialog;
             }
             return null;
@@ -274,6 +281,8 @@ public class UnGlueAction extends JosmAction {
         }
 
         private void updateProperties(final Node existingNode, final Iterable<Node> newNodes, final Collection<Command> cmds) {
+            if (tags != null) System.out.println(tags.newNode.isSelected() + " / " + tags.oldNode.isSelected());
+            else System.out.println("tags is null");
             if (tags != null && tags.newNode.isSelected()) {
                 final Node newSelectedNode = new Node(existingNode);
                 newSelectedNode.removeAll();
@@ -286,6 +295,8 @@ public class UnGlueAction extends JosmAction {
         }
 
         private void updateMemberships(final Node existingNode, final List<Node> newNodes, final Collection<Command> cmds) {
+if (memberships != null)            System.out.println(memberships.newNode.isSelected() + " / " + memberships.bothNodes.isSelected());
+            else System.out.println("memberships is null");
             if (memberships != null && memberships.bothNodes.isSelected()) {
                 fixRelations(existingNode, cmds, newNodes, false);
             } else if (memberships != null && memberships.newNode.isSelected()) {
@@ -316,12 +327,13 @@ public class UnGlueAction extends JosmAction {
             dialog.update(selectedNode, Collections.singletonList(n), cmds);
         }
 
+        /*
         // If this wasn't called from menu, place it where the cursor is/was
         if (e != null && e.getSource() instanceof JPanel) {
             MapView mv = Main.map.mapView;
             n.setCoor(mv.getLatLon(mv.lastMEvent.getX(), mv.lastMEvent.getY()));
         }
-
+        */
         Main.main.undoRedo.add(new SequenceCommand(tr("Unglued Node"), cmds));
         getLayerManager().getEditDataSet().setSelected(n);
         Main.map.mapView.repaint();

@@ -426,8 +426,9 @@ public class CombinePrimitiveResolverDialog extends JDialog {
          * Updates enabled state.
          */
         protected final void updateEnabledState() {
-            setEnabled(modelTagConflictResolver.isResolvedCompletely()
-                    && modelRelConflictResolver.isResolvedCompletely());
+            setEnabled(true);
+            // setEnabled(modelTagConflictResolver.isResolvedCompletely()
+                    // && modelRelConflictResolver.isResolvedCompletely());
         }
 
         @Override

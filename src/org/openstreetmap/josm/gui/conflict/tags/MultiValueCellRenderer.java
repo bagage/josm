@@ -85,7 +85,7 @@ public class MultiValueCellRenderer extends JLabel implements TableCellRenderer 
         model.removeAllElements();
         switch (decision.getDecisionType()) {
         case UNDECIDED:
-            model.addElement(tr("Choose a value"));
+            model.addElement(decision.getChosenValue()!=null ? decision.getChosenValue() : tr("Choose a value"));
             cbDecisionRenderer.setFont(getFont().deriveFont(Font.ITALIC));
             cbDecisionRenderer.setSelectedIndex(0);
             break;
